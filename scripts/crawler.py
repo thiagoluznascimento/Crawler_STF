@@ -76,3 +76,5 @@ def main():
 # verificando se a variavel __name__ == __main__,(verifica se este aquivo está sendo execultado) entao execulta o main() lá de cima.
 if __name__ == "__main__":
     main()
+
+#teste 
