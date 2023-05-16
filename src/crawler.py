@@ -57,7 +57,7 @@ class CrawlerStf:
         """Parsea conteudo HTML e retorna lista de slugs(parte legivél da url) dos cadernos PDF"""
 
 
-#    def _baixa_arquivos_pdf(self, slugs_pdfs):
+    def _baixa_arquivos_pdf(self, slugs_pdfs):
 #        """Itera os slugs dos pdfs e baixa faz requisição para obter o conteudo do pdf
 #        e retorna dicionario relacionando seu mdc com o seu conteudo."""
 #
