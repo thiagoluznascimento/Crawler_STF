@@ -1,10 +1,79 @@
 import sys
 import hashlib
-import requests
 import os
+
+import requests
 from bs4 import BeautifulSoup
 
 
+class CrawlerStf:
+    '''Classe CrawlerStf para fazer extrações das publicações no STF'''
+    HEADERS = {
+        "User-agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+            " Chrome/89.0.4389.90 Safari/537.36"
+        )
+    }
+    URL_BUSCA = ( 
+        "https://portal.stf.jus.br/servicos/dje/listarDiarioJustica.asp?tipoVisualizaDJ="
+        "periodoDJ&txtNumeroDJ=&txtAnoDJ=2022&dataInicial={data}&dataFinal={data}"
+        "&tipoPesquisaDJ=&argumento="
+    )
+# Método construtor
+
+    def __init__(self, data):
+        self._data_busca = data
+
+# Chamando os métodos utilitarios
+
+    def baixa_cadernos(self):
+        pagina_resultado_busca = self._busca_cadernos()
+        links_cadernos = self._parser_links_cadernos(pagina_resultado_busca)
+        #print(links_cadernos)
+        #slugs_pdfs = self._obtem_slugs_cadernos(pagina_resultado_busca)
+        #arquivos_pdf = self._baixa_arquivos_pdf(slugs_pdfs)
+        #self._salva_arquivos(arquivos_pdf)
+        #self._exibe_conteudo_baixado(arquivos_pdf)
+
+# Métodos utilitários
+    def _busca_cadernos(self):
+        """Faz requisição no tribunal e retorna resultado"""
+        link = self.URL_BUSCA.format(data=self._data_busca)
+        resposta = requests.get(link, headers=self.HEADERS)
+        return resposta.text
+
+    def _parser_links_cadernos(self, pagina_resultado_busca):
+        '''Obtem os links dos cadernos do tribunal'''
+        soup = BeautifulSoup(pagina_resultado_busca, "html.parser")
+        ul = soup.find("ul", {"class": "result__container--simples"})
+        lista_anchor = ul.find_all('a')
+        lista_slugs = [anchor['href'] for anchor in lista_anchor]
+        # for anchor in lista_anchor:
+        #     lista_slugs.append(anchor['href'])
+        return lista_slugs
+
+
+    def _parser_links_pdfs(self):
+        """Parsea conteudo HTML e retorna lista de slugs(parte legivél da url) dos cadernos PDF"""
+
+
+#    def _baixa_arquivos_pdf(self, slugs_pdfs):
+#        """Itera os slugs dos pdfs e baixa faz requisição para obter o conteudo do pdf
+#        e retorna dicionario relacionando seu mdc com o seu conteudo."""
+#
+#        dicionario = {}
+#        for slug in slugs_pdfs:
+#            response = requests.get(url=slug)
+#            dicionario[self._obtem_md5(response.content)] = response.content
+#
+#    def _obtem_md5(conteudo_pdf):
+#        """recebe conteúdo pdf e calcula o hashMd5"""
+#        pass
+
+
+#############################################################################################################
+# Codigo antigo
+"""""
 def main():
     # Verifica se foi passada uma data como argumento
     if len(sys.argv) < 2:
@@ -48,6 +117,7 @@ def main():
         if (num_dj != "0"):
             # Link para a busca do PDF, de acordo com o numero do DJ e a data, passados por parâmetro
             url = f"https://portal.stf.jus.br/servicos/dje/verDiarioEletronico.asp?numero={num_dj}&data={data_formatada}"
+
             # Retorna página com o PDF
             html = requests.get(url, headers=user_agent)
             # Atribui à variável status o valor do status code
@@ -76,5 +146,4 @@ def main():
 # verificando se a variavel __name__ == __main__,(verifica se este aquivo está sendo execultado) entao execulta o main() lá de cima.
 if __name__ == "__main__":
     main()
-
-#teste 
+"""
