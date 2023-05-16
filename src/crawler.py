@@ -25,11 +25,11 @@ class CrawlerStf:
         self._data_busca = data
 
 # Chamando os métodos utilitarios
-
     def baixa_cadernos(self):
         pagina_resultado_busca = self._busca_cadernos()
         links_cadernos = self._parser_links_cadernos(pagina_resultado_busca)
-        #print(links_cadernos)
+        links_pdfs = self._obtem_links_dj(links_cadernos)
+        print(links_pdfs)
         #slugs_pdfs = self._obtem_slugs_cadernos(pagina_resultado_busca)
         #arquivos_pdf = self._baixa_arquivos_pdf(slugs_pdfs)
         #self._salva_arquivos(arquivos_pdf)
@@ -52,12 +52,27 @@ class CrawlerStf:
         #     lista_slugs.append(anchor['href'])
         return lista_slugs
 
+    def _obtem_links_dj(self, links_cadernos):
+        """Parsea os links que contém DJs do dia"""
+        links = links_cadernos
+        listas_slugs_pdfs = []
+        for link in links:
+            url = 'https://portal.stf.jus.br/servicos/dje/' + link
+            response = requests.get(url, headers=self.HEADERS)
+            slug = self._parser_links_dj(response.text)
+            if slug:
+                listas_slugs_pdfs.append(slug)
+        return listas_slugs_pdfs
 
-    def _parser_links_pdfs(self):
-        """Parsea conteudo HTML e retorna lista de slugs(parte legivél da url) dos cadernos PDF"""
+    def _parser_links_dj(self, pagina_html_dj):
+        soup = BeautifulSoup(pagina_html_dj, "html.parser")
+        ancor_pdf = soup.find("a", string="Integral")
+        if not ancor_pdf:
+            return ''
+        return ancor_pdf['href']
+            
 
-
-    def _baixa_arquivos_pdf(self, slugs_pdfs):
+#  def _baixa_arquivos_pdf(self, slugs_pdfs):
 #        """Itera os slugs dos pdfs e baixa faz requisição para obter o conteudo do pdf
 #        e retorna dicionario relacionando seu mdc com o seu conteudo."""
 #
