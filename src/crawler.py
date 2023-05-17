@@ -29,9 +29,8 @@ class CrawlerStf:
         pagina_resultado_busca = self._busca_cadernos()
         links_cadernos = self._parser_links_cadernos(pagina_resultado_busca)
         links_pdfs = self._obtem_links_dj(links_cadernos)
-        print(links_pdfs)
-        #slugs_pdfs = self._obtem_slugs_cadernos(pagina_resultado_busca)
-        #arquivos_pdf = self._baixa_arquivos_pdf(slugs_pdfs)
+        slugs_pdfs = self._baixa_arquivos_pdf(links_pdfs)
+        #arquivos_pdf = self.slugs_pdfs)
         #self._salva_arquivos(arquivos_pdf)
         #self._exibe_conteudo_baixado(arquivos_pdf)
 
@@ -70,20 +69,26 @@ class CrawlerStf:
         if not ancor_pdf:
             return ''
         return ancor_pdf['href']
-            
 
-#  def _baixa_arquivos_pdf(self, slugs_pdfs):
-#        """Itera os slugs dos pdfs e baixa faz requisição para obter o conteudo do pdf
-#        e retorna dicionario relacionando seu mdc com o seu conteudo."""
-#
-#        dicionario = {}
-#        for slug in slugs_pdfs:
-#            response = requests.get(url=slug)
-#            dicionario[self._obtem_md5(response.content)] = response.content
-#
-#    def _obtem_md5(conteudo_pdf):
-#        """recebe conteúdo pdf e calcula o hashMd5"""
-#        pass
+    def _baixa_arquivos_pdf(self, links_pdfs):
+        """Itera os slugs dos pdfs e baixa faz requisição para obter o conteúdo
+        do pdfe retorna dicionario relacionando seu mdc com o seu conteudo."""
+        slugs_pdfs = links_pdfs
+        for slug in slugs_pdfs:
+            response = requests.get(url=slug, headers=self.HEADERS)
+            if response.status_code == 200:
+                with open(self._data_busca + "/" + self.hash_md5 + ".pdf", "wb") as f:
+                    f.write(slugs_pdfs.content)
+                print("Download concluído com sucesso.")
+            else:
+                print("Falha ao baixar o arquivo.")
+            if not os.path.exists(self._data_busca):
+                os.mkdir(self._data_busca)
+            dicionario[self._obtem_md5(response.content)] = response.content
+
+    def _obtem_md5(self, conteudo_pdf):
+        """recebe conteúdo pdf e calcula o hashMd5"""
+        self.hash_md5 = hashlib.md5(url.encode()).hexdigest()
 
 
 #############################################################################################################
