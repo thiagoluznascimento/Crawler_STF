@@ -1,6 +1,8 @@
 import hashlib
 import os
 
+import unittest
+from unittest import mock
 import requests
 from bs4 import BeautifulSoup
 
@@ -28,8 +30,8 @@ class CrawlerStf:
         pagina_resultado_busca = self._busca_cadernos()
         links_cadernos = self._parser_links_cadernos(pagina_resultado_busca)
         links_pdfs = self._obtem_links_dj(links_cadernos)
-        baixa_pdfs = self._baixa_arquivos_pdf(links_pdfs)
-        hashs_md5 = self._obtem_md5(baixa_pdfs)
+        self._baixa_arquivos_pdf(links_pdfs)
+        
 
 # Métodos utilitários
     def _busca_cadernos(self):
@@ -44,6 +46,8 @@ class CrawlerStf:
         '''
         soup = BeautifulSoup(pagina_resultado_busca, "html.parser")
         ul = soup.find("ul", {"class": "result__container--simples"})
+        if not ul:
+            return []
         lista_anchor = ul.find_all('a')
         lista_slugs = [anchor['href'] for anchor in lista_anchor]
         # for anchor in lista_anchor:
@@ -76,18 +80,18 @@ class CrawlerStf:
         """
         if not os.path.exists(self._data_busca):
             os.mkdir(self._data_busca)
-        url = links_pdfs
-        self.nome_arquivo = 'teste.pdf'
-        response = requests.get(url, headers=self.HEADERS)
-        with open(self.nome_arquivo, "wb") as file:
-            file.write(response.content)
-        return response.content
 
-    def _obtem_md5(self, baixa_pdfs):
+        for link in links_pdfs:
+            url = r'https://portal.stf.jus.br' + link
+            response = requests.get(url, headers=self.HEADERS)
+            nome_arquivo = self._obtem_md5(response.content) + ".pdf"
+            #import pdb; pdb.set_trace()
+            with open(self._data_busca + "/" + nome_arquivo, "wb") as file:
+                file.write(response.content)
+
+    def _obtem_md5(self, conteudo_pdf):
         """recebe conteúdo pdf e calcula o hashMd5
         """
-        response = requests.get(url=baixa_pdfs, headers=self.HEADERS)
-        pdf_content = response.content
-        md5_hash = hashlib.md5(pdf_content).hexdigest()
-        self.dicionario[md5_hash] = baixa_pdfs
-        return self.dicionario
+        md5_hash = hashlib.md5(conteudo_pdf).hexdigest()
+        print(md5_hash)
+        return md5_hash
