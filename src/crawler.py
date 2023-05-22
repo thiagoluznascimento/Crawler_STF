@@ -1,8 +1,6 @@
 import hashlib
 import os
 
-import unittest
-from unittest import mock
 import requests
 from bs4 import BeautifulSoup
 
@@ -31,7 +29,6 @@ class CrawlerStf:
         links_cadernos = self._parser_links_cadernos(pagina_resultado_busca)
         links_pdfs = self._obtem_links_dj(links_cadernos)
         self._baixa_arquivos_pdf(links_pdfs)
-        
 
 # Métodos utilitários
     def _busca_cadernos(self):
