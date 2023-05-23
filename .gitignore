@@ -1,4 +1,5 @@
 venv/
+*cadernos/
 */__pycache__/
 *.pyc
 .flake8
