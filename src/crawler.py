@@ -1,9 +1,9 @@
 import hashlib
 import os
-import sys
 
 import requests
 from bs4 import BeautifulSoup
+from re import match
 
 
 class CrawlerStf:
@@ -26,7 +26,17 @@ class CrawlerStf:
         self._data_busca = data
         if data > '2022-12-31':
             print('O valor da data informada deve ser do dia "31-12-2022" ou anterior.')
-            sys.exit()
+            return
+        re_data = r'(?P<ano>\d{4})\D(?P<mes>\d{2})\D(?P<dia>\d{2})$'
+        match_obj = match(re_data, data)
+        dic_grupos = match_obj.groupdict()
+        self.meses_do_ano = {
+            1: 'jan', 2: 'fev', 3: 'mar', 4: 'abr', 5: 'mai', 6: 'jun', 7: 'jul', 8: 'ago', 9: 'set',
+            10: 'out', 11: 'nov', 12: 'dez'
+        }
+        self.mes_obtido = int(dic_grupos['mes'])
+        self.valor_ano = dic_grupos['ano']
+        self.valor_dia = dic_grupos['dia']
 
 # Chamando os métodos utilitarios
     def baixa_cadernos(self):
@@ -81,7 +91,11 @@ class CrawlerStf:
         """Verifica se existe a pasta com nome igual ao dia do arquivo e o cria se não existir;
         itera os slugs dos pdfs e baixa, faz requisição para obter o conteúdodo pdf.
         """
-        caminho = (r'/home/thiago/justica_facil/estagio/cadernos/ano/mes/dia')
+        #caminho = (r'/home/thiago/justica_facil/estagio/cadernos/ano/self.meses_do_ano[mes_obtido]/dia')
+        caminho = (r'/home/thiago/justica_facil/estagio/cadernos/''Ano: ' + repr(self.valor_ano) + '/''Mes: '
+                   + repr(self.meses_do_ano[self.mes_obtido]) + '/''Dia: ' + repr(self.valor_dia))
+
+
         os.makedirs(caminho, exist_ok=True)
         for link in links_pdfs:
             url = r'https://portal.stf.jus.br' + link
