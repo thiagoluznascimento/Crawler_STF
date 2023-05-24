@@ -21,7 +21,7 @@ class CrawlerStf:
         "&tipoPesquisaDJ=&argumento="
     )
 
-    RE_DATA = r'^(?P<ano>\d{4})\D(?P<mes>\d{2})\D(?P<dia>\d{2})\Z'
+    RE_DATA = re_data = r'^(?P<ano>\d{4})\D(?P<mes>\d{2})\D(?P<dia>\d{2})\Z'
 
     MESES_ANO = {
             1: 'jan', 2: 'fev', 3: 'mar', 4: 'abr', 5: 'mai', 6: 'jun', 7: 'jul', 8: 'ago', 9: 'set',
@@ -31,23 +31,33 @@ class CrawlerStf:
     # Método construtor
     def __init__(self, data):
         self._data_busca = data
-        if data > '2022-12-31':
-            print('O valor da data informada deve ser do dia "31-12-2022" ou anterior.')
-            return
-        match_obj = match(self.RE_DATA, data)
-        dic_grupos = match_obj.groupdict()
-        self.mes_obtido = int(dic_grupos['mes'])
-        self.valor_ano = dic_grupos['ano']
-        self.valor_dia = dic_grupos['dia']
 
     # Chamando os métodos utilitarios
     def baixa_cadernos(self):
+        if not self._valida_data(self._data_busca):
+            return
         pagina_resultado_busca = self._busca_cadernos()
         links_cadernos = self._parser_links_cadernos(pagina_resultado_busca)
         if not links_cadernos:
             return
         links_pdfs = self._obtem_links_dj(links_cadernos)
         self._baixa_arquivos_pdf(links_pdfs)
+
+    def _valida_data(self, data: str) -> bool:
+        data_separada = self._decompoem_data(data)
+        if data_separada:
+            if data_separada['ano'] <= '2022' and data_separada['mes'] <= '12' and \
+                  data_separada['dia'] <= '31':
+                return True
+        print('Data invalida! \n A informada deve possuir o formato AAAA-MM-DD e ser inferior "31-12-2022".')
+        return False
+
+    def _decompoem_data(self, data: str) -> dict:
+        match_obj = match(self.RE_DATA, data)
+        if match_obj:
+            return match_obj.groupdict()
+        else:
+            return {}
 
     # Métodos utilitários
     def _busca_cadernos(self):
@@ -93,9 +103,7 @@ class CrawlerStf:
         """Verifica se existe a pasta com nome igual ao dia do arquivo e o cria se não existir;
         itera os slugs dos pdfs e baixa, faz requisição para obter o conteúdodo pdf.
         """
-        caminho = (r'./cadernos/''Ano: ' + repr(self.valor_ano) + '/''Mes: '
-                   + repr(self.MESES_ANO[self.mes_obtido]) + '/''Dia: ' + repr(self.valor_dia))
-
+        caminho = self._obtem_caminho()
         os.makedirs(caminho, exist_ok=True)
         for link in links_pdfs:
             url = r'https://portal.stf.jus.br' + link
@@ -107,6 +115,12 @@ class CrawlerStf:
                 print(f'Caderno com o "{nome_arquivo}" salvo com sucesso!')
             else:
                 print(f'Caderno com o "{nome_arquivo}" já existe!')
+
+    def _obtem_caminho(self) -> str:
+        data_decomposta = self._decompoem_data(self._data_busca)
+        caminho = r'./cadernos/{ano}/{mes}/{dia}/'
+        mes = self.MESES_ANO[int(data_decomposta['mes'])]
+        return caminho.format(ano=data_decomposta['ano'], mes=mes, dia=data_decomposta['dia'])
 
     def _obtem_md5(self, conteudo_pdf):
         """recebe conteúdo pdf e calcula o hashMd5
