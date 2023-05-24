@@ -14,7 +14,7 @@ class CrawlerStf:
             " Chrome/89.0.4389.90 Safari/537.36"
         )
     }
-    URL_BUSCA = ( 
+    URL_BUSCA = (
         "https://portal.stf.jus.br/servicos/dje/listarDiarioJustica.asp?tipoVisualizaDJ="
         "periodoDJ&txtNumeroDJ=&txtAnoDJ=2022&dataInicial={data}&dataFinal={data}"
         "&tipoPesquisaDJ=&argumento="
@@ -27,7 +27,7 @@ class CrawlerStf:
         if data > '2022-12-31':
             print('O valor da data informada deve ser do dia "31-12-2022" ou anterior.')
             return
-        re_data = r'(?P<ano>\d{4})\D(?P<mes>\d{2})\D(?P<dia>\d{2})$'
+        re_data = r'^(?P<ano>\d{4})\D(?P<mes>\d{2})\D(?P<dia>\d{2})\Z'
         match_obj = match(re_data, data)
         dic_grupos = match_obj.groupdict()
         self.meses_do_ano = {
