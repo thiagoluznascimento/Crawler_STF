@@ -33,7 +33,7 @@ class CrawlerStf:
         self._data_busca = data
 
     # Chamando os métodos utilitarios
-    def baixa_cadernos(self):
+    def baixa_cadernos(self) -> None:
         if not self._valida_data(self._data_busca):
             return
         pagina_resultado_busca = self._busca_cadernos()
@@ -65,6 +65,7 @@ class CrawlerStf:
         """
         link = self.URL_BUSCA.format(data=self._data_busca)
         resposta = requests.get(link, headers=self.HEADERS)
+        #import pdb; pdb.set_trace()
         return resposta.text
 
     def _parser_links_cadernos(self, pagina_resultado_busca):
